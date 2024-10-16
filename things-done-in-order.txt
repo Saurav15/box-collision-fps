@@ -1,0 +1,64 @@
+1. Setup the react project.
+
+2. Now start with creating the camera, basic scene and setting up a rendere. Well to make things easy for us, react fiber provides us a component called <Canvas/> that will automatically do all the 3 things for us.
+
+3. Add mesh, with boxgeometry and meshBasicMaterial in side the canvas.
+
+4. Now we can see the cube on the screen. Add the orbitalControls to move around the scene. (From Deri). Also add <axesHelper/>.
+
+5. Make the cube spin using basic animation. Need to use useFrame() hook for this. Also we cannot use the useFrame hook inside the app as everting related to 3js must be inside the <Canvas> component. Thus need to create a different component for out cube and use the useFrame hook inside it.
+
+6. Make the background black, even now we can see the object. Soo change the material from basic to standard. Now as everying is black, lets add an ambient light soo that we can see the box.
+
+7. Convert that basic ambient light to a spotlight. Before doing that lets do one thing take all the helper function into one class called <Helper /> and add everyting there. Now as we can see that Drei does not provide any component for spotlighthelper soo we are going to use the raw Three.js and then get our current scene from useThree() hook and add the newly created spotlightHelper to our scene. We will do all of this inside the <Helper/>. We will also need a ref which we will pass to the Spotlight and then use that to ref value to pass inside the spotlighthelper to tell the helper which spotlight to use.
+
+8. Enable the shadows. To do this first state the renderer that we will also need shadows in the scene to do this set the renderers shadowMap.enabled = true. Now we also need to tell our light that it is allowed to cast shadows. Also now we need to tell our cube that it will castShadow and our ground that it will recieveShadow. 
+Now we can see the shadow but the quality of shadow is too low!
+ShadowMaps: This setting states the resolution of shadows, default configuration is 512x512, we can update it from lights setting to make the quality of shadows better.
+FYI: In Three.js, lights, including spotlights, do not have cameras themselves. However, when you're dealing with lights that cast shadows, such as a spotlight, a virtual camera is used internally to calculate how shadows are cast from the perspective of the light source. 
+We can see the camera by using cameraHelper and passing spotlight's shadow camera to it spotlightRef.current.shadow.camera
+The camera uses frustrum.
+
+FRUSTRUM: The term "frustum" refers to a geometric shape in three-dimensional space that resembles a pyramid with its top chopped off. It's typically used in computer graphics, particularly in rendering scenes using perspective projection.
+In the context of rendering, the frustum represents the viewing volume or the visible portion of the scene from the perspective of a virtual camera or a light source. This viewing volume is defined by six planes:
+NEAR PLANE: This is the closest plane to the camera, and objects nearer to the camera than this plane will be clipped and not rendered.
+FAR PLANE: This is the farthest plane from the camera, and objects farther away from the camera than this plane will be clipped.
+LEFT, RIGHT, TOP, and BOTTOM planes: These planes define the sides of the frustum.
+We can change the frustrum of the shadow camera by  spotlightRef.current.shadow.camera.near = 1;spotlightRef.current.shadow.camera.far = 10;
+
+
+
+9. Enable gravity simulation using the useFrame hook. This was simple.
+
+10. Collision Detection: Now inorder to detect the collision we will use the boundingBox functionality provided by threejs. A bounding box is a box-shaped volume that surrounds an object or a group of objects in a scene. It's commonly used for various purposes such as collision detection, culling, physics calculations, and spatial optimizations. We can also use the Box3Helper to see the empty box volume on the screen. 
+Create the bounce effect and also simulate the gravity. 
+Steps: 
+a. Keep cube in the air with velocity=0 , set few constants like gravity and velocity. 
+b. Keep adding the gravity to velocity and set it to the mainCube.position.y value. 
+c. Keep doing it until collision is detected. 
+c. Now as soon as collision is detected reverse the direction of velocity and multiply it by the bounce effect, this will reduce the velocity while bouncing and will keep doing it after every collision is detected. 
+d. Here one problem will be again and again changing the velocity direction and the cube will end up occilating on the ground, to avoid this whenever collision is detected just move the cube few cm above the ground.
+
+
+
+
+
+12. Adding another object in the scene, this will be a 3D model.
+Analogy for animation:
+1. AnimationMixer: Its like a DJ mixing console.
+2. AnimationClip: Its like a CD that contains the song that is to be played in the Dj.
+3. AnimationAction: An AnimationAction is like pressing play on your CD player. It plays an AnimationClip and allows control over playback—pausing, stopping, looping, etc.
+
+Steps:
+1. Load both the animation models. we will just use animations from these models and not the scene.
+2. Create an animation mixer that will be used to play and pause all the animations.
+3. Create the actionController for both running and walking animations inside useEffect. (Make them global i.e. useRefs)
+4. Also create another variable called currentAnimation to store what animation is currently running ?? Walking or Running
+5.Add an event listener to listen for 'w' for walking and 'r' for running.
+5. Create two functions 'transitionToRunning' and 'transitionToWalking' and call then on 'w' and 'r' key press. These functions will play,pause and crossFade between the animations.
+6. Update the mixer on everyFrame and add the delta time to the mixer, use useframe with clock feature of threejs in that.
+
+7. Create a function that trims the given animation by start-time and end-time. There is some extra 
+8. Insert a new charerter that is simply standing, create a function called `transitionToStanding`. Update the `transitionToWlaking` to only run when user is standing and `transitionToRunning` function to only run when user is running already.
+9. On every key-down event create a setTimeout that will run after 1500ms, so if the w is pressed then after 1500ms character will start to run.
+10. On every key-up clear the setTimeout kept for running, also transition the character from walkin/running to standing.
